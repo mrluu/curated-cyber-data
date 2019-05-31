@@ -7,7 +7,18 @@ const client = new ApolloClient({
   uri: "https://us-central1-curated-cyber-data.cloudfunctions.net/api/graphql",
 });
 
+const cveStyle = {
+  fontWeight: "900",
+  fontSize: "20px"
+}
+
 class ViewVulns extends Component {
+  displayAffectedProducts(affectedProducts) {
+    return affectedProducts.map((product) => {
+      return (<p key={product.cpe}>{product.cpe}</p>);
+    });
+  }
+
   render() {
     return (
       <ApolloProvider client={client}>
@@ -19,6 +30,9 @@ class ViewVulns extends Component {
                 vulnerabilities {
                   id
                   description
+                  affectedProducts {
+                    cpe
+                  }
                 }
               }
             `}
@@ -29,10 +43,12 @@ class ViewVulns extends Component {
               if (error)
                 return <p>Error :(</p>;
 
-              return data.vulnerabilities.map(({ id, description }) => (
+              return data.vulnerabilities.map(({ id, description, affectedProducts }) => (
                 <div key={id} className="vuln_data">
-                  <label>{id}</label>
+                  <label style={cveStyle}>{id}</label>
                   <p>{description}</p>
+                  {this.displayAffectedProducts(affectedProducts)}
+                  <br/>
                 </div>
               ));
             }}
