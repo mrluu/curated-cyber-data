@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Router, Route, Link } from "react-router-dom";
 import { createBrowserHistory } from 'history';
 import Home from "./Home";
-import Vulnerabilities from "./Vulnerabilities";
+import {Vulnerabilities} from "./Vulnerabilities";
 import Configurations from "./Configurations";
 import Threats from "./Threats"
 import "./App.css"

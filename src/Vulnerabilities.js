@@ -5,8 +5,20 @@ import gql from "graphql-tag";
 import AddVuln from "./AddVuln";
 
 const client = new ApolloClient({
-  uri: "https://us-central1-curated-cyber-data.cloudfunctions.net/api/graphql",
+  uri: "https://us-central1-curated-cyber-data.cloudfunctions.net/ccd_api/graphql",
 });
+
+const VULN_QUERY = gql`
+  {
+    vulnerabilities {
+      id
+      description
+      affectedProducts {
+        cpe
+      }
+    }
+  }
+`;
 
 const cveStyle = {
   fontWeight: "900",
@@ -41,7 +53,13 @@ class Vulnerabilities extends Component {
     });
   }
 
+  updateCacheWithNewVuln(newVuln) {
+    console.log("updateCacheWithNewVuln(): " + newVuln.id);
+    client.writeData({ data: newVuln});
+  }
+
   render() {
+    console.log("Vulnerabilities.render()");
     return (
       <ApolloProvider client={client}>
         <div className="page-background">
@@ -49,6 +67,7 @@ class Vulnerabilities extends Component {
           <AddVuln
             showModal={this.state.showAddVulnModal}
             hideModalHandler={() => this.hideAddVulnModal()}
+            updateCache={(newVuln) => this.updateCacheWithNewVuln(newVuln)}
           />
           <button onClick={() => this.showAddVulnModal()}>
             Add Vulnerability
@@ -56,17 +75,7 @@ class Vulnerabilities extends Component {
           <hr/>
           <div className="view-vulns">
             <Query
-              query={gql`
-                {
-                  vulnerabilities {
-                    id
-                    description
-                    affectedProducts {
-                      cpe
-                    }
-                  }
-                }
-              `}
+              query={VULN_QUERY}
             >
               {({ loading, error, data }) => {
                 if (loading)
@@ -91,4 +100,7 @@ class Vulnerabilities extends Component {
   }
 }
 
-export default Vulnerabilities;
+export {
+  Vulnerabilities,
+  VULN_QUERY
+}

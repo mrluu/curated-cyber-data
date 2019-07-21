@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Modal from 'react-modal';
-import { Mutation } from "react-apollo";
+import { ApolloConsumer, Mutation } from "react-apollo";
 import gql from "graphql-tag";
+import { VULN_QUERY} from "./Vulnerabilities";
 
 const inputStyle = {
   width: "250px",
@@ -69,8 +70,12 @@ class AddVuln extends Component {
     return (
       <Modal isOpen={this.props.showModal} style={modalStyle}>
         <div className="add-vulns" style={addVulnsFormStyle}>
-          <Mutation mutation={ADD_VULN}>
-            {(addVulnerability, { data }) => (
+        <ApolloConsumer>
+          {client => (
+          <Mutation
+            mutation={ADD_VULN}
+          >
+            {addVulnerability => (
               <div>
                 <form
                   onSubmit={e => {
@@ -79,7 +84,22 @@ class AddVuln extends Component {
                       alert("CVE is required");
                     }
                     else {
-                      addVulnerability({ variables: { input: {id: cve.value, description: desc.value} } });
+                      addVulnerability({
+                        refetchQueries: [{
+                          query: VULN_QUERY,
+                          variables: { repoFullName: 'apollographql/apollo-client' },
+                        }],
+                        variables: { input: {id: cve.value, description: desc.value} },
+                        update: (store, { data: {addVulnerability} }) => {
+                          let oldData = store.readQuery({ query: VULN_QUERY });
+
+                          store.writeQuery({
+                            query: VULN_QUERY,
+                            data: { vulnerabilities: oldData.vulnerabilities.concat([addVulnerability]) },
+                          });
+                        }
+                      });
+                      //this.props.updateCache({id: cve.value, description: desc.value});
                       cve.value = "";
                       desc.value = "";
                       this.close();
@@ -106,6 +126,8 @@ class AddVuln extends Component {
               </div>
             )}
           </Mutation>
+          )}
+        </ApolloConsumer>
         </div>
       </Modal>
     );
