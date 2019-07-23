@@ -13,9 +13,7 @@ const VULN_QUERY = gql`
     vulnerabilities {
       id
       description
-      affectedProducts {
-        cpe
-      }
+      affectedProducts
     }
   }
 `;
@@ -48,8 +46,10 @@ class Vulnerabilities extends Component {
   }
 
   displayAffectedProducts(affectedProducts) {
+    console.log("affectedProducts: " + affectedProducts.length);
     return affectedProducts.map((product) => {
-      return (<p key={product.cpe}>{product.cpe}</p>);
+      console.log(product);
+      return (<p key={product}>{product}</p>);
     });
   }
 
